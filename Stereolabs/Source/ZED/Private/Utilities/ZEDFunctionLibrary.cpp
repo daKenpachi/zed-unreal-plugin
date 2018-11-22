@@ -439,6 +439,69 @@ TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtScreenPositi
 	return RetrieveResults;
 }
 
+TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtImagePositions(AZEDPlayerController* PlayerController, const TArray<FVector2D>& ImagePositions, 
+	TArray<float>& Depths, TArray<float>& Distances, TArray<FVector>& Normals, TArray<FVector>& WorldDirections)
+{
+	int ScreenPositionsNum = ImagePositions.Num();
+
+	TArray<ESlRetrieveResult> RetrieveResults;
+	RetrieveResults.Reserve(ScreenPositionsNum);
+
+	TArray<FIntPoint> VisibleScreenPositions;
+	VisibleScreenPositions.Reserve(ScreenPositionsNum);
+
+	Depths.Reserve(ScreenPositionsNum);
+	Distances.Reserve(ScreenPositionsNum);
+	Normals.Reserve(ScreenPositionsNum);
+
+	WorldDirections.Init(FVector(0.0f, 0.0f, 0.0f), ScreenPositionsNum);
+
+	for (auto ScreenPositionIt = ImagePositions.CreateConstIterator(); ScreenPositionIt; ++ScreenPositionIt)
+	{
+		if (!PlayerController->ViewportHelper.IsInViewport(ScreenPositionIt->X, ScreenPositionIt->Y))
+		{
+			RetrieveResults.Add(ESlRetrieveResult::RR_LocationNotValid);
+			continue;
+		}
+
+		FVector WorldLocation;
+		UZEDFunctionLibrary::DeprojectScreenToWorld(PlayerController, *ScreenPositionIt, WorldLocation, WorldDirections[ScreenPositionIt.GetIndex()]);
+
+		RetrieveResults.Add(ESlRetrieveResult::RR_RetrieveValid);
+		VisibleScreenPositions.Add(FIntPoint(ScreenPositionIt->X, ScreenPositionIt->Y));
+	}
+
+	TArray<float> OutDepths;
+	TArray<FVector> OutNormals;
+	GSlCameraProxy->GetDepthsAndNormals(PlayerController->ViewportHelper, VisibleScreenPositions, OutDepths, OutNormals);
+
+	int OutIndex = 0;
+	for (int ScreenPositionIndex = 0; ScreenPositionIndex < ScreenPositionsNum; ++ScreenPositionIndex)
+	{
+		if (RetrieveResults[ScreenPositionIndex] == ESlRetrieveResult::RR_RetrieveValid)
+		{
+			Depths.Add(OutDepths[OutIndex]);
+			Normals.Add(OutNormals[OutIndex]);
+			Distances.Add(USlFunctionLibrary::ConvertDepthToDistance(PlayerController->ViewportHelper, VisibleScreenPositions[OutIndex], OutDepths[OutIndex]));
+
+			++OutIndex;
+
+			if (Normals[ScreenPositionIndex] == FVector::ZeroVector)
+			{
+				RetrieveResults[ScreenPositionIndex] = ESlRetrieveResult::RR_NormalNotValid;
+			}
+		}
+		else
+		{
+			Depths.Add(-1.0f);
+			Distances.Add(0.0f);
+			Normals.Add(FVector::ZeroVector);
+		}
+	}
+
+	return RetrieveResults;
+}
+
 TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtWorldLocations(AZEDPlayerController* PlayerController, const TArray<FVector>& Locations, TArray<float>& Depths, TArray<float>& Distances, TArray<FVector>& Normals)
 {
 	int LocationsNum = Locations.Num();

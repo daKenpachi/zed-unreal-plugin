@@ -1066,6 +1066,42 @@ void USlCameraProxy::GetDepthsAndNormals(const FSlViewportHelper& ViewportHelper
 	}
 }
 
+void USlCameraProxy::GetDepthsAndNormals(const TArray<FIntPoint>& ImagePositions, TArray<float>& Depths, TArray<FVector>& Normals)
+{
+	checkf(MeasuresWorker && bHitTestDepthEnabled && bHitTestNormalsEnabled, TEXT("Depth and Normals hit tests must be enabled"));
+
+	TArray<FVector4> DepthsAndNormals = MeasuresWorker->GetDepthsAndNormals(ImagePositions);
+
+	int ScreenPositionsNums = ImagePositions.Num();
+	Depths.Reserve(ScreenPositionsNums);
+	Normals.Reserve(ScreenPositionsNums);
+
+	for (int ScreenPositionsIndex = 0; ScreenPositionsIndex < ScreenPositionsNums; ++ScreenPositionsIndex)
+	{
+		float& Depth = DepthsAndNormals[ScreenPositionsIndex].Z;
+		if (!FMath::IsFinite(Depth))
+		{
+			if (FMath::IsNaN(Depth) || Depth > 0.0f)
+			{
+				Depth = Zed.getDepthMaxRangeValue();
+			}
+			else
+			{
+				Depth = Zed.getDepthMinRangeValue();
+			}
+		}
+		Depths.Add(Depth + HMDToCameraOffset);
+
+		FVector Normal(DepthsAndNormals[ScreenPositionsIndex]);
+		float Size = Normal.SizeSquared();
+		if (!FMath::IsFinite(Size) || FMath::IsNaN(Size))
+		{
+			Normal = FVector::ZeroVector;
+		}
+		Normals.Add(Normal);
+	}
+}
+
 void USlCameraProxy::SetHitTestDepthAndNormals(bool bEnableDepth, bool bEnableNormals)
 {
 	bHitTestDepthEnabled = bEnableDepth;

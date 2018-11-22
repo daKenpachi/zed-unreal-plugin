@@ -429,6 +429,15 @@ public:
 	void GetDepthsAndNormals(const FSlViewportHelper& ViewportHelper, const TArray<FIntPoint>& ScreenPositions, TArray<float>& Depths, TArray<FVector>& Normals);
 
 	/*
+	* Retrieve the depths and normals at the screen position
+	* @param ImagePositions  The image position to check
+	* @param Normal	       The normal associated. If the normal = 0, it is not valid.
+	*/
+	UFUNCTION(BlueprintPure, meta = (Keywords = "get zed depth"), Category = "Zed|Rendering")
+		void GetDepthsAndNormalsFromImage(const TArray<FIntPoint>& ImagePositions, TArray<float>& Depths, TArray<FVector>& Normals);
+
+
+	/*
 	 * Call this function to get the current error of the open camera async task.
 	 * @return The current error code
 	 */

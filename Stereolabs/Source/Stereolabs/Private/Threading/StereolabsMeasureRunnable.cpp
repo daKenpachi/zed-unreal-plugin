@@ -335,3 +335,30 @@ TArray<FVector4> FSlMeasureRunnable::GetDepthsAndNormals(const TArray<FIntPoint>
 		return DepthsAndNormals;
 	SL_SCOPE_UNLOCK
 }
+
+TArray<FVector4> FSlMeasureRunnable::GetDepthsAndNormals(const TArray<FIntPoint>& ImagePositions)
+{
+	SL_SCOPE_LOCK(Lock, GetSection)
+		TArray<FVector4> DepthsAndNormals;
+	DepthsAndNormals.Reserve(ImagePositions.Num());
+
+	sl::Mat& DepthMat = Buffer->Mats[0];
+	sl::Mat& NormalsMat = Buffer->Mats[1];
+
+	sl::float4 Normal;
+	float Depth;
+
+	for (auto Iterator = ImagePositions.CreateConstIterator(); Iterator; ++Iterator)
+	{
+		uint32 X = FMath::Min(Iterator->X, (int32)OutputRangeX.Y);
+		uint32 Y = FMath::Min(Iterator->X, (int32)OutputRangeY.Y);
+
+		NormalsMat.getValue(X, Y, &Normal, sl::MEM::MEM_CPU);
+		DepthMat.getValue(X, Y, &Depth, sl::MEM::MEM_CPU);
+
+		DepthsAndNormals.Insert(FVector4(Normal.x, Normal.y, Normal.z, Depth), Iterator.GetIndex());
+	}
+
+	return DepthsAndNormals;
+	SL_SCOPE_UNLOCK
+}

@@ -264,6 +264,10 @@ public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetDepthsAndNormalsAtScreenPositions", Keywords = "get zed depths normals screen"), Category = "Stereolabs|Zed")
 	static TArray<ESlRetrieveResult> GetDepthsAndNormalsAtScreenPositions(AZEDPlayerController* PlayerController, const TArray<FVector2D>& ScreenPositions, TArray<float>& Depths, TArray<float>& Distances, TArray<FVector>& Normals, TArray<FVector>& WorldDirections);
 
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetDepthsAndNormalsAtScreenPositions", Keywords = "get zed depths normals screen"), Category = "Stereolabs|Zed")
+		static TArray<ESlRetrieveResult> GetDepthsAndNormalsAtImagePositions(AZEDPlayerController* PlayerController, const TArray<FVector2D>& ImagePositions, TArray<float>& Depths, TArray<float>& Distances, TArray<FVector>& Normals, TArray<FVector>& WorldDirections);
+
+
 	/*
 	 * Retrieve the depths and normals at world locations
 	 * @param PlayerController The Zed player controller

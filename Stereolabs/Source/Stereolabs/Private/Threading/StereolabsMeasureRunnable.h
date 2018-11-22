@@ -97,6 +97,12 @@ public:
 	 */
 	TArray<FVector4> GetDepthsAndNormals(const TArray<FIntPoint>& ScreenPositions, const FVector2D& InputRangeX, const FVector2D& InputRangeY);
 
+	/*
+	* @param ImagePositions The image positions
+	* @return The depths and normals at the screen positions
+	*/
+	TArray<FVector4> GetDepthsAndNormals(const TArray<FIntPoint>& ImagePositions);
+
 private:
 	/*
 	 * Grab delegate callback
