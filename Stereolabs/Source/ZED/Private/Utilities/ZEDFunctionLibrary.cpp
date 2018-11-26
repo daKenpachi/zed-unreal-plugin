@@ -439,7 +439,7 @@ TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtScreenPositi
 	return RetrieveResults;
 }
 
-TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtImagePositions(AZEDPlayerController* PlayerController, const TArray<FVector2D>& ImagePositions, 
+TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtImagePositions(AZEDPlayerController* PlayerController, const TArray<FVector2D>& ImagePositions,
 	TArray<float>& Depths, TArray<float>& Distances, TArray<FVector>& Normals, TArray<FVector>& WorldDirections)
 {
 	int ScreenPositionsNum = ImagePositions.Num();
@@ -501,6 +501,30 @@ TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtImagePositio
 
 	return RetrieveResults;
 }
+
+
+ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtImagePositions(const TArray<FVector2D> ImagePositions, TArray<FVector>& Points)
+{
+	Points.Reserve(ImagePositions.Num());
+
+	sl::Mat Mat;
+
+	if (!GSlCameraProxy->RetrieveMeasure(Mat, ESlMeasure::M_XYZ, ESlMemoryType::MT_CPU, GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution))
+	{
+		return ESlRetrieveResult::RR_LocationNotValid;
+	}
+
+	int ResulstsNum = ImagePositions.Num();
+	for (int ResultsIndex = 0; ResultsIndex < ResulstsNum; ++ResultsIndex)
+	{
+		sl::float4 point;
+		Mat.getValue(int(ImagePositions[ResultsIndex].X), int(ImagePositions[ResultsIndex].Y), &point);
+		Points.Add(FVector(point.x, point.y, point.z));
+	}
+
+	return ESlRetrieveResult::RR_RetrieveValid;
+}
+
 
 TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtWorldLocations(AZEDPlayerController* PlayerController, const TArray<FVector>& Locations, TArray<float>& Depths, TArray<float>& Distances, TArray<FVector>& Normals)
 {
