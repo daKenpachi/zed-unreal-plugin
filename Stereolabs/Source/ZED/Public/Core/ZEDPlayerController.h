@@ -250,6 +250,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Zed")
 	TSubclassOf<AZEDPawn> PawnClass;
 
+	/** The class of the Zed actor. Must be a subclass of AZEDCamera */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Zed")
+	TSubclassOf<AZEDCamera> ZedCameraClass;
+
 	/** Pawn spawned delegate */
 	UPROPERTY(BlueprintAssignable, Category = "Zed")
 	FZEDPlayerControllerDelegate OnPawnSpawned;
@@ -265,6 +269,7 @@ public:
 	/** The current Zed actor attached to the pawn */
 	UPROPERTY(BlueprintReadOnly, Category = "Zed")
 	AZEDCamera* ZedCamera;
+
 
 	/** True to use pawn and Zed default spawn sequence and start initialization of the controller after pawn spawned */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Zed")

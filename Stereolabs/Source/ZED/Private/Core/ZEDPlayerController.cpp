@@ -73,7 +73,8 @@ AZEDPlayerController::AZEDPlayerController()
 	CurrentNoiseValue(0),
 	ZedPawn(nullptr),
 	ZedCamera(nullptr),
-	PawnClass(AZEDPawn::StaticClass())
+	PawnClass(AZEDPawn::StaticClass()),
+	ZedCameraClass(AZEDCamera::StaticClass())
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bTickEvenWhenPaused = false;
@@ -424,7 +425,7 @@ UObject* AZEDPlayerController::SpawnPawn(UClass* NewPawnClass, bool bPossess)
 
 void AZEDPlayerController::SpawnZedCameraActor()
 {
-	ZedCamera = GetWorld()->SpawnActor<AZEDCamera>();
+	ZedCamera = Cast<AZEDCamera>(GetWorld()->SpawnActor(ZedCameraClass));
 }
 
 void AZEDPlayerController::Init()
