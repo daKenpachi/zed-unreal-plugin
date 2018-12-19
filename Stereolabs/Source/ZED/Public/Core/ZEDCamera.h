@@ -116,6 +116,13 @@ public:
 	void SetVOPlaybackLooping(bool bLooping);
 
 	/*
+	* Hide some actors in Mixed Reality (will still be displayed in Virtual Render Targets)
+	* @param Components		Components to hide.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Zed|Rendering")
+		void SetActorsToHide(TArray<AActor*> Actors);
+
+	/*
 	 * Initialize parameters
 	 * @param ZedInitializer The initializer
 	 * @param bHMDEnabled	 True if HMD enabled
@@ -229,6 +236,14 @@ public:
 	/** Render target right eye */
 	UPROPERTY(BlueprintReadWrite, Category = "Zed|Textures")
 	UTextureRenderTarget2D* RightEyeRenderTarget;
+
+	/** Render target left eye just VR */
+	UPROPERTY(BlueprintReadWrite, Category = "Zed|Textures")
+	UTextureRenderTarget2D* LeftEyeVirtualRenderTarget;
+
+	/** Render target right eye just VR */
+	UPROPERTY(BlueprintReadWrite, Category = "Zed|Textures")
+	UTextureRenderTarget2D* RightEyeVirtualRenderTarget;
 
 	// ------------------------------------------------------------------
 
@@ -412,6 +427,14 @@ private:
 		/** Right final plane on which right fused (virtual and real) image is displayed */
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
 		UStaticMeshComponent* FinalRightPlane;
+
+		/** Left VR camera (virtual equivalent of physical left zed camera) */
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
+			USceneCaptureComponent2D* VirtualLeftCamera;
+
+		/** Right VR camera (virtual equivalent of physical right zed camera)*/
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
+			USceneCaptureComponent2D* VirtualRightCamera;
 
 	private:
 

@@ -53,6 +53,8 @@ AZEDCamera::AZEDCamera()
 	RightEyeNormals(nullptr),
 	LeftEyeRenderTarget(nullptr),
 	RightEyeRenderTarget(nullptr),
+	LeftEyeVirtualRenderTarget(nullptr),
+	RightEyeVirtualRenderTarget(nullptr),
 	CurrentDepthTextureQualityPreset(0)
 {
 	// Controller tick the camera to make it the first actor to tick
@@ -77,6 +79,8 @@ AZEDCamera::AZEDCamera()
 	InterRightPlaneTranslationRoot = CreateDefaultSubobject<USceneComponent>(TEXT("InterRightPlaneTranslationRoot"));
 	InterLeftCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("InterLeftCamera"));
 	InterRightCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("InterRightCamera"));
+	VirtualLeftCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("VirtualLeftCamera"));
+	VirtualRightCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("VirtualRightCamera"));
 	InterLeftPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InterLeftPlane"));
 	InterRightPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InterRightPlane"));
 	FinalRoot = CreateDefaultSubobject<USceneComponent>(TEXT("FinalRoot"));
@@ -93,6 +97,8 @@ AZEDCamera::AZEDCamera()
 	InterRightPlaneTranslationRoot->SetupAttachment(InterRightPlaneRotationRoot);
 	InterLeftCamera->SetupAttachment(InterLeftRoot);
 	InterRightCamera->SetupAttachment(InterRightRoot);
+	VirtualLeftCamera->SetupAttachment(InterLeftRoot);
+	VirtualRightCamera->SetupAttachment(InterRightRoot);
 	InterLeftPlane->SetupAttachment(InterLeftPlaneTranslationRoot);
 	InterRightPlane->SetupAttachment(InterRightPlaneTranslationRoot);
 	FinalRoot->SetupAttachment(RootComponent);
@@ -107,6 +113,12 @@ AZEDCamera::AZEDCamera()
 	InterRightCamera->bCaptureEveryFrame = true;
 	InterRightCamera->bCaptureOnMovement = false;
 	InterRightCamera->SetAutoActivate(false);
+	VirtualLeftCamera->bCaptureEveryFrame = true;
+	VirtualLeftCamera->bCaptureOnMovement = false;
+	VirtualLeftCamera->SetAutoActivate(false);
+	VirtualRightCamera->bCaptureEveryFrame = true;
+	VirtualRightCamera->bCaptureOnMovement = false;
+	VirtualRightCamera->SetAutoActivate(false);
 
 	// Add static mesh to planes
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMesh(TEXT("StaticMesh'/Stereolabs/ZED/Shapes/SM_Plane_100x100.SM_Plane_100x100'"));
@@ -902,6 +914,12 @@ void AZEDCamera::SetVOPlaybackLooping(bool bLooping)
 	GSlCameraProxy->SetSVOPlaybackLooping(bLooping);
 }
 
+void AZEDCamera::SetActorsToHide(TArray<AActor*> Actors)
+{
+	InterLeftCamera->HiddenActors = Actors;
+	InterRightCamera->HiddenActors = Actors;
+}
+
 void AZEDCamera::InitHMDTrackingData()
 {
 	sl::mr::driftCorrectorInitialize();
@@ -1009,20 +1027,28 @@ void AZEDCamera::SetupComponents(bool stereo)
 	HMDLeftEyeMaterialInstanceDynamic->SetTextureParameterValue("RealVirtual", LeftEyeRenderTarget);
 	InterLeftCamera->TextureTarget = LeftEyeRenderTarget;
 	InterLeftCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	LeftEyeVirtualRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA8);
+	VirtualLeftCamera->TextureTarget = LeftEyeVirtualRenderTarget;
+	VirtualLeftCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 	FinalLeftPlane->SetMaterial(0, HMDLeftEyeMaterialInstanceDynamic);
 	if (stereo)
 	{
 		RightEyeRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA8);
 		HMDRightEyeMaterialInstanceDynamic->SetTextureParameterValue("RealVirtual", RightEyeRenderTarget);
-		InterRightCamera->TextureTarget = RightEyeRenderTarget;
-		InterRightCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+		RightEyeVirtualRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA8);
+		VirtualRightCamera->TextureTarget = RightEyeRenderTarget;
+		VirtualRightCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 		FinalRightPlane->SetMaterial(0, HMDRightEyeMaterialInstanceDynamic);
 	}
 
 	// Set camera FOV
 	InterLeftCamera->FOVAngle = cameraParam.HFOV;
-	if (stereo)
+	VirtualLeftCamera->FOVAngle = cameraParam.HFOV;
+	if (stereo) {
 		InterRightCamera->FOVAngle = cameraParam.HFOV;
+		VirtualRightCamera->FOVAngle = cameraParam.HFOV;
+
+	}
 
 	// Set plane size
 	SetPlaneSize(InterLeftPlane, CameraRenderPlaneDistance);
@@ -1080,11 +1106,15 @@ void AZEDCamera::SetupComponents(bool stereo)
 
 	// Set camera projection matrix
 	InterLeftCamera->bUseCustomProjectionMatrix = true;
+	VirtualLeftCamera->bUseCustomProjectionMatrix = true;
 	USlFunctionLibrary::GetSceneCaptureProjectionMatrix(InterLeftCamera->CustomProjectionMatrix, ESlEye::E_Left);
+	USlFunctionLibrary::GetSceneCaptureProjectionMatrix(VirtualLeftCamera->CustomProjectionMatrix, ESlEye::E_Left);
 	if (stereo)
 	{
 		InterRightCamera->bUseCustomProjectionMatrix = true;
+		VirtualRightCamera->bUseCustomProjectionMatrix = true;
 		USlFunctionLibrary::GetSceneCaptureProjectionMatrix(InterRightCamera->CustomProjectionMatrix, ESlEye::E_Right);
+		USlFunctionLibrary::GetSceneCaptureProjectionMatrix(VirtualRightCamera->CustomProjectionMatrix, ESlEye::E_Right);
 	}
 
 	// Set calibration Zed-HMD
@@ -1103,6 +1133,10 @@ void AZEDCamera::SetupComponents(bool stereo)
 	// Show only list management
 	InterLeftCamera->HideComponent(FinalLeftPlane);
 	InterLeftCamera->HideComponent(FinalRightPlane);
+	VirtualLeftCamera->HideComponent(FinalLeftPlane);
+	VirtualLeftCamera->HideComponent(FinalRightPlane);
+	VirtualLeftCamera->HideComponent(InterLeftPlane);
+	VirtualLeftCamera->HideComponent(InterRightPlane);
 	UZEDFunctionLibrary::GetPlayerController(this)->bUseShowOnlyList = true;
 	UZEDFunctionLibrary::GetPlayerController(this)->EmptyShowOnlyComponentList();
 	UZEDFunctionLibrary::GetPlayerController(this)->AddShowOnlyComponent(FinalLeftPlane);
@@ -1110,6 +1144,10 @@ void AZEDCamera::SetupComponents(bool stereo)
 	{
 		InterRightCamera->HideComponent(FinalLeftPlane);
 		InterRightCamera->HideComponent(FinalRightPlane);
+		VirtualRightCamera->HideComponent(FinalLeftPlane);
+		VirtualRightCamera->HideComponent(FinalRightPlane);
+		VirtualRightCamera->HideComponent(InterLeftPlane);
+		VirtualRightCamera->HideComponent(InterRightPlane);
 		UZEDFunctionLibrary::GetPlayerController(this)->AddShowOnlyComponent(FinalRightPlane);
 	}
 }
