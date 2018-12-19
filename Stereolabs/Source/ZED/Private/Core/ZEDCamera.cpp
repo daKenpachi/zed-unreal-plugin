@@ -1035,8 +1035,10 @@ void AZEDCamera::SetupComponents(bool stereo)
 	{
 		RightEyeRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA8);
 		HMDRightEyeMaterialInstanceDynamic->SetTextureParameterValue("RealVirtual", RightEyeRenderTarget);
+		InterRightCamera->TextureTarget = RightEyeRenderTarget;
+		InterRightCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 		RightEyeVirtualRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA8);
-		VirtualRightCamera->TextureTarget = RightEyeRenderTarget;
+		VirtualRightCamera->TextureTarget = RightEyeVirtualRenderTarget;
 		VirtualRightCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 		FinalRightPlane->SetMaterial(0, HMDRightEyeMaterialInstanceDynamic);
 	}
