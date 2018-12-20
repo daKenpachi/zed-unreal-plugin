@@ -77,10 +77,10 @@ AZEDCamera::AZEDCamera()
 	InterRightRoot = CreateDefaultSubobject<USceneComponent>(TEXT("InterRightRoot"));
 	InterRightPlaneRotationRoot = CreateDefaultSubobject<USceneComponent>(TEXT("InterRightPlaneRotationRoot"));
 	InterRightPlaneTranslationRoot = CreateDefaultSubobject<USceneComponent>(TEXT("InterRightPlaneTranslationRoot"));
-	InterLeftCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("InterLeftCamera"));
-	InterRightCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("InterRightCamera"));
-	VirtualLeftCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("VirtualLeftCamera"));
-	VirtualRightCamera = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("VirtualRightCamera"));
+	InterLeftCamera = CreateDefaultSubobject<SceneCaptureComponentT>(TEXT("InterLeftCamera"));
+	InterRightCamera = CreateDefaultSubobject<SceneCaptureComponentT>(TEXT("InterRightCamera"));
+	VirtualLeftCamera = CreateDefaultSubobject<SceneCaptureComponentT>(TEXT("VirtualLeftCamera"));
+	VirtualRightCamera = CreateDefaultSubobject<SceneCaptureComponentT>(TEXT("VirtualRightCamera"));
 	InterLeftPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InterLeftPlane"));
 	InterRightPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("InterRightPlane"));
 	FinalRoot = CreateDefaultSubobject<USceneComponent>(TEXT("FinalRoot"));
@@ -110,15 +110,19 @@ AZEDCamera::AZEDCamera()
 	InterLeftCamera->bCaptureEveryFrame = true;
 	InterLeftCamera->bCaptureOnMovement = false;
 	InterLeftCamera->SetAutoActivate(false);
+	InterLeftCamera->TargetActors = TargetActors;
 	InterRightCamera->bCaptureEveryFrame = true;
 	InterRightCamera->bCaptureOnMovement = false;
 	InterRightCamera->SetAutoActivate(false);
-	VirtualLeftCamera->bCaptureEveryFrame = true;
+	InterRightCamera->TargetActors = TargetActors;
+	VirtualLeftCamera->bCaptureEveryFrame = false;
 	VirtualLeftCamera->bCaptureOnMovement = false;
 	VirtualLeftCamera->SetAutoActivate(false);
-	VirtualRightCamera->bCaptureEveryFrame = true;
+	VirtualLeftCamera->TargetActors = TargetActors;
+	VirtualRightCamera->bCaptureEveryFrame = false;
 	VirtualRightCamera->bCaptureOnMovement = false;
 	VirtualRightCamera->SetAutoActivate(false);
+	VirtualRightCamera->TargetActors = TargetActors;
 
 	// Add static mesh to planes
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMesh(TEXT("StaticMesh'/Stereolabs/ZED/Shapes/SM_Plane_100x100.SM_Plane_100x100'"));
@@ -301,6 +305,13 @@ bool AZEDCamera::CanEditChange(const UProperty* InProperty) const
 void AZEDCamera::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
+	if(!InterLeftCamera->bCaptureEveryFrame){
+		InterLeftCamera->CaptureScene();
+		InterRightCamera->CaptureScene();
+		VirtualLeftCamera->CaptureScene();
+		VirtualRightCamera->CaptureScene();
+	}
 
 	if (RenderingParameters.ThreadingMode == ESlThreadingMode::TM_SingleThreaded)
 	{
@@ -735,6 +746,16 @@ void AZEDCamera::ResetTrackingOrigin()
 void AZEDCamera::SaveSpatialMemoryArea()
 {
 	GSlCameraProxy->SaveSpatialMemoryArea(TrackingParameters.SpatialMemoryFileSavingPath);
+}
+
+
+void AZEDCamera::SetTargetActors(TArray<AActor*> Actors)
+{
+	TargetActors = Actors;
+	InterLeftCamera->TargetActors = Actors;
+	InterRightCamera->TargetActors = Actors;
+	VirtualLeftCamera->TargetActors = Actors;
+	VirtualRightCamera->TargetActors = Actors;
 }
 
 void AZEDCamera::InitializeParameters(AZEDInitializer* ZedInitializer, bool bHMDEnabled)

@@ -6,10 +6,14 @@
 #include "ZED/Public/Core/ZEDInitializer.h"
 #include "Stereolabs/Public/Core/StereolabsTexture.h"
 #include "Stereolabs/Public/Core/StereolabsTextureBatch.h"
+#include "../../Source/ZedMiniInterface/MySceneCaptureComponent2D.h"
+
 
 #include <sl_mr_core/defines.hpp>
 
 #include "ZEDCamera.generated.h"
+
+typedef UMySceneCaptureComponent2D SceneCaptureComponentT;
 
 DECLARE_LOG_CATEGORY_EXTERN(ZEDCamera, Log, All);
 
@@ -117,10 +121,24 @@ public:
 
 	/*
 	* Hide some actors in Mixed Reality (will still be displayed in Virtual Render Targets)
-	* @param Components		Components to hide.
+	* @param Actors		Actors to hide.
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Zed|Rendering")
 		void SetActorsToHide(TArray<AActor*> Actors);
+
+	/*
+	* Set some target actors which have bounding boxes applied.
+	* These bounding boxes are displayed (as 2D bounding box) on the RenderTargets, even if the actor itself is hidden.
+	*/
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Zed|Rendering")
+	TArray<AActor*> TargetActors;
+
+	/*
+	* Set the target actors which have bounding boxes shown on rendertargets.
+	* @param Actors		Actors to show bounding boxes.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Zed|Rendering")
+		void SetTargetActors(TArray<AActor*> Actors);
 
 	/*
 	 * Initialize parameters
@@ -398,11 +416,11 @@ private:
 
 		/** Left intermediate camera (virtual equivalent of physical left zed camera) */
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
-		USceneCaptureComponent2D* InterLeftCamera;
+			UMySceneCaptureComponent2D* InterLeftCamera;
 
 		/** Right intermediate camera (virtual equivalent of physical right zed camera)*/
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
-		USceneCaptureComponent2D* InterRightCamera;
+			UMySceneCaptureComponent2D* InterRightCamera;
 
 		/** Intermediate left plane on which Zed left image is displayed */
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
@@ -430,11 +448,11 @@ private:
 
 		/** Left VR camera (virtual equivalent of physical left zed camera) */
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
-			USceneCaptureComponent2D* VirtualLeftCamera;
+			UMySceneCaptureComponent2D* VirtualLeftCamera;
 
 		/** Right VR camera (virtual equivalent of physical right zed camera)*/
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zed|Components")
-			USceneCaptureComponent2D* VirtualRightCamera;
+			UMySceneCaptureComponent2D* VirtualRightCamera;
 
 	private:
 

@@ -48,7 +48,9 @@ public class ZED : ModuleRules
 
                  "UMG",
                  "Slate",
-                 "SlateCore"
+                 "SlateCore",
+
+                 "ZedMiniInterface"
 
 				// ... add other public dependencies that you statically link with here ...
 			}
