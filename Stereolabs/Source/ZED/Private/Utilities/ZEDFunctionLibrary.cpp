@@ -503,23 +503,41 @@ TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtImagePositio
 }
 
 
-ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtImagePositions(const TArray<FVector2D> ImagePositions, TArray<FVector>& Points)
+ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtImagePositions(const TArray<FVector2D> ImagePositions, TArray<FVector>& Points, TArray<FColor>& Colors, 
+	float MinConfidence, float MaxConfidence)
 {
-	Points.Reserve(ImagePositions.Num());
+	//Points.Reserve(ImagePositions.Num());
+	//Colors.Reserve(ImagePositions.Num());
 
 	sl::Mat Mat;
+	sl::Mat confidence;
 
-	if (!GSlCameraProxy->RetrieveMeasure(Mat, ESlMeasure::M_XYZ, ESlMemoryType::MT_CPU, GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution))
+	if (!GSlCameraProxy->RetrieveMeasure(Mat, ESlMeasure::M_XYZ_RGBA, ESlMemoryType::MT_CPU, 
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution))
 	{
 		return ESlRetrieveResult::RR_LocationNotValid;
+	}
+	if (!GSlCameraProxy->RetrieveMeasure(confidence, ESlMeasure::M_Confidence, ESlMemoryType::MT_CPU,
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution)) {
+		UE_LOG(LogTemp, Error, TEXT("No Confidence Map available"));
+		MinConfidence = 0; 
+		MaxConfidence = 100;
 	}
 
 	int ResulstsNum = ImagePositions.Num();
 	for (int ResultsIndex = 0; ResultsIndex < ResulstsNum; ++ResultsIndex)
 	{
-		sl::float4 point;
-		Mat.getValue(int(ImagePositions[ResultsIndex].X), int(ImagePositions[ResultsIndex].Y), &point);
-		Points.Add(FVector(point.x, point.y, point.z));
+		float conf;
+		confidence.getValue(int(ImagePositions[ResultsIndex].X), int(ImagePositions[ResultsIndex].Y), &conf);
+		if (conf >= MinConfidence && conf <= MaxConfidence) {
+
+			sl::float4 point;
+			Mat.getValue(int(ImagePositions[ResultsIndex].X), int(ImagePositions[ResultsIndex].Y), &point);
+			Points.Add(FVector(point.x, point.y, point.z));
+			uint32 color;
+			memcpy(&color, &point.w, sizeof color);
+			Colors.Add(FColor(color));
+		}
 	}
 
 	return ESlRetrieveResult::RR_RetrieveValid;
