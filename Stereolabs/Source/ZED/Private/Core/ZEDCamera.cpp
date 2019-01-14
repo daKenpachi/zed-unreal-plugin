@@ -1048,9 +1048,9 @@ void AZEDCamera::SetupComponents(bool stereo)
 	HMDLeftEyeMaterialInstanceDynamic->SetTextureParameterValue("RealVirtual", LeftEyeRenderTarget);
 	InterLeftCamera->TextureTarget = LeftEyeRenderTarget;
 	InterLeftCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
-	LeftEyeVirtualRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA8);
+	LeftEyeVirtualRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA16f);
 	VirtualLeftCamera->TextureTarget = LeftEyeVirtualRenderTarget;
-	VirtualLeftCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	VirtualLeftCamera->CaptureSource = ESceneCaptureSource::SCS_SceneColorSceneDepth;
 	FinalLeftPlane->SetMaterial(0, HMDLeftEyeMaterialInstanceDynamic);
 	if (stereo)
 	{
@@ -1058,9 +1058,9 @@ void AZEDCamera::SetupComponents(bool stereo)
 		HMDRightEyeMaterialInstanceDynamic->SetTextureParameterValue("RealVirtual", RightEyeRenderTarget);
 		InterRightCamera->TextureTarget = RightEyeRenderTarget;
 		InterRightCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
-		RightEyeVirtualRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA8);
+		RightEyeVirtualRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), cameraParam.Resolution.X, cameraParam.Resolution.Y, ETextureRenderTargetFormat::RTF_RGBA16f);
 		VirtualRightCamera->TextureTarget = RightEyeVirtualRenderTarget;
-		VirtualRightCamera->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+		VirtualRightCamera->CaptureSource = ESceneCaptureSource::SCS_SceneColorSceneDepth;
 		FinalRightPlane->SetMaterial(0, HMDRightEyeMaterialInstanceDynamic);
 	}
 
