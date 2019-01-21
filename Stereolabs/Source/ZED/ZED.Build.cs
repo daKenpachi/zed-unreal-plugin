@@ -26,7 +26,6 @@ public class ZED : ModuleRules
         PublicIncludePaths.AddRange(
             new string[] {
                 "ZED/Public"
-
 				// ... add public include paths required here ...
 			}
             );
@@ -50,7 +49,8 @@ public class ZED : ModuleRules
                  "Slate",
                  "SlateCore",
 
-                 "ZedMiniInterface"
+                 "ZedMiniInterface",
+                 "PCL"
 
 				// ... add other public dependencies that you statically link with here ...
 			}

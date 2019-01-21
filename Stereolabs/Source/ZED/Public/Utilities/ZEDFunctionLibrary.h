@@ -2,6 +2,8 @@
 
 #pragma once
 
+#define HAS_PCL
+
 #include "Engine.h"
 #include "kismet/BlueprintFunctionLibrary.h"
 
@@ -9,6 +11,11 @@
 #include "ZED/Public/Core/ZEDCoreGlobals.h"
 #include "Stereolabs/Public/Core/StereolabsCoreGlobals.h"
 #include "Stereolabs/Public/Core/StereolabsCameraProxy.h"
+
+//#ifdef HAS_PCL
+#include "ThirdParty/PCL_181/include/pcl-1.8/pcl/point_cloud.h"
+#include "ThirdParty/PCL_181/include/pcl-1.8/pcl/point_types.h"
+//#endif
 
 #include "ZEDFunctionLibrary.generated.h"
 
@@ -270,6 +277,13 @@ public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetPointCloudAtImagePositions", Keywords = "get zed depths normals screen"), Category = "Stereolabs|Zed")
 	static ESlRetrieveResult GetPointCloudAtImagePositions(const TArray<FVector2D> ImagePositions, TArray<FVector>& Points, TArray<FColor>& Colors, float MinConfidence = 0, float MaxConfidence = 100);
 
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "GetPointCloudAtImagePositions", Keywords = "get zed depths normals screen"), Category = "Stereolabs|Zed")
+	static ESlRetrieveResult GetPointCloudAndNormalsAtImagePositions(const TArray<FVector2D> ImagePositions, TArray<FVector>& Points, TArray<FVector>& Normals, TArray<FColor>& Colors, float MinConfidence = 0, float MaxConfidence = 100);
+
+
+//#ifdef HAS_PCL
+	static ESlRetrieveResult GetPointCloudAtRoi(FBox2D ROI, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr & PointcloudOut, float MinConfidence = 0, float MaxConfidence = 100);
+//#endif
 
 	/*
 	 * Retrieve the depths and normals at world locations

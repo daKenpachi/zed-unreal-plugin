@@ -544,6 +544,57 @@ ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtImagePositions(const TArra
 }
 
 
+ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAndNormalsAtImagePositions(const TArray<FVector2D> ImagePositions, TArray<FVector>& Points, TArray<FVector>& Normals, TArray<FColor>& Colors,
+	float MinConfidence, float MaxConfidence)
+{
+	//Points.Reserve(ImagePositions.Num());
+	//Colors.Reserve(ImagePositions.Num());
+
+	sl::Mat Mat;
+	sl::Mat myNormals;
+	sl::Mat confidence;
+
+	if (!GSlCameraProxy->RetrieveMeasure(Mat, ESlMeasure::M_XYZ_RGBA, ESlMemoryType::MT_CPU,
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution))
+	{
+		return ESlRetrieveResult::RR_LocationNotValid;
+	}
+	if (!GSlCameraProxy->RetrieveMeasure(myNormals, ESlMeasure::M_Normals, ESlMemoryType::MT_CPU,
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution))
+	{
+		return ESlRetrieveResult::RR_NormalNotValid;
+	}
+	if (!GSlCameraProxy->RetrieveMeasure(confidence, ESlMeasure::M_Confidence, ESlMemoryType::MT_CPU,
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution)) {
+		UE_LOG(LogTemp, Error, TEXT("No Confidence Map available"));
+		MinConfidence = 0;
+		MaxConfidence = 100;
+	}
+
+	int ResulstsNum = ImagePositions.Num();
+	for (int ResultsIndex = 0; ResultsIndex < ResulstsNum; ++ResultsIndex)
+	{
+		float conf;
+		confidence.getValue(int(ImagePositions[ResultsIndex].X), int(ImagePositions[ResultsIndex].Y), &conf);
+		if (conf >= MinConfidence && conf <= MaxConfidence) {
+
+			sl::float4 point;
+			sl::float3 normal;
+			Mat.getValue(int(ImagePositions[ResultsIndex].X), int(ImagePositions[ResultsIndex].Y), &point);
+			myNormals.getValue(int(ImagePositions[ResultsIndex].X), int(ImagePositions[ResultsIndex].Y), &normal);
+			Points.Add(FVector(point.x, point.y, point.z));
+			uint32 color;
+			memcpy(&color, &point.w, sizeof color);
+			Colors.Add(FColor(color));
+			Normals.Add(FVector(normal.x, normal.y, normal.z));
+		}
+	}
+
+	return ESlRetrieveResult::RR_RetrieveValid;
+}
+
+
+
 TArray<ESlRetrieveResult> UZEDFunctionLibrary::GetDepthsAndNormalsAtWorldLocations(AZEDPlayerController* PlayerController, const TArray<FVector>& Locations, TArray<float>& Depths, TArray<float>& Distances, TArray<FVector>& Normals)
 {
 	int LocationsNum = Locations.Num();
@@ -1017,3 +1068,58 @@ void UZEDFunctionLibrary::LatencyCorrectorAddOffset(const int offset)
 {
 	sl::mr::latencyCorrectorAdjOffset(offset);
 }
+
+//#ifdef HAS_PCL
+ESlRetrieveResult GetPointCloudAtRoi(FBox2D ROI, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr & PointcloudOut, float MinConfidence, float MaxConfidence)
+{
+
+	sl::Mat Mat;
+	sl::Mat Normals;
+	sl::Mat confidence;
+
+	if (!GSlCameraProxy->RetrieveMeasure(Mat, ESlMeasure::M_XYZ_RGBA, ESlMemoryType::MT_CPU,
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution))
+	{
+		return ESlRetrieveResult::RR_LocationNotValid;
+	}
+	if (!GSlCameraProxy->RetrieveMeasure(Normals, ESlMeasure::M_Normals, ESlMemoryType::MT_CPU,
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution))
+	{
+		return ESlRetrieveResult::RR_NormalNotValid;
+	}
+	if (!GSlCameraProxy->RetrieveMeasure(confidence, ESlMeasure::M_Confidence, ESlMemoryType::MT_CPU,
+		GSlCameraProxy->CameraInformation.CalibrationParameters.LeftCameraParameters.Resolution)) {
+		UE_LOG(LogTemp, Error, TEXT("No Confidence Map available"));
+		MinConfidence = 0;
+		MaxConfidence = 100;
+	}
+
+	for (int y = ROI.Min.Y; y < ROI.Max.Y; ++y)
+	{
+		for (int x = ROI.Min.X; x < ROI.Max.X; ++x) {
+
+			float conf;
+			confidence.getValue(x, y, &conf);
+			if (conf >= MinConfidence && conf <= MaxConfidence) {
+
+				sl::float4 point;
+				sl::float3 normal;
+				Mat.getValue(x, y, &point);
+				Normals.getValue(x, y, &normal);
+				pcl::PointXYZRGBNormal pclPoint;
+				pclPoint.x = point.x;
+				pclPoint.y = point.y;
+				pclPoint.z = point.z;
+				pclPoint.rgb = point.w;
+				pclPoint.normal_x = normal.x;
+				pclPoint.normal_y = normal.y;
+				pclPoint.normal_z = normal.z;
+
+			}
+		}
+	}
+
+	return ESlRetrieveResult::RR_RetrieveValid;
+
+}
+//#endif
