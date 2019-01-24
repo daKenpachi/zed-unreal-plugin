@@ -1107,14 +1107,14 @@ ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtRoi(FBox2D ROI, pcl::Point
 				Mat.getValue(x, y, &point);
 				Normals.getValue(x, y, &normal);
 				pcl::PointXYZRGBNormal pclPoint;
-				pclPoint.x = point.x;
-				pclPoint.y = point.y;
-				pclPoint.z = point.z;
+				pclPoint.x = point.y;
+				pclPoint.y = -point.z;
+				pclPoint.z = point.x;
 				pclPoint.rgb = point.w;
 				pclPoint.normal_x = normal.x;
 				pclPoint.normal_y = normal.y;
 				pclPoint.normal_z = normal.z;
-
+				PointcloudOut->push_back(pclPoint);
 			}
 		}
 	}
