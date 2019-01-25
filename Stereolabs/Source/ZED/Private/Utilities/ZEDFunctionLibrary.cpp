@@ -1110,7 +1110,11 @@ ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtRoi(FBox2D ROI, pcl::Point
 				pclPoint.x = point.y;
 				pclPoint.y = -point.z;
 				pclPoint.z = point.x;
-				pclPoint.rgb = point.w;
+				unsigned char color[sizeof(float)];
+				memcpy(color, &point[3], sizeof(float));
+				pclPoint.r = color[0];
+				pclPoint.g = color[1];
+				pclPoint.b = color[2];
 				pclPoint.normal_x = normal.x;
 				pclPoint.normal_y = normal.y;
 				pclPoint.normal_z = normal.z;
