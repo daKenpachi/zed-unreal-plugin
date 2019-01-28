@@ -1107,9 +1107,9 @@ ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtRoi(FBox2D ROI, pcl::Point
 				Mat.getValue(x, y, &point);
 				Normals.getValue(x, y, &normal);
 				pcl::PointXYZRGBNormal pclPoint;
-				pclPoint.x = point.y;
-				pclPoint.y = -point.z;
-				pclPoint.z = point.x;
+				pclPoint.x = point.x;
+				pclPoint.y = point.y;
+				pclPoint.z = point.z;
 				unsigned char color[sizeof(float)];
 				memcpy(color, &point[3], sizeof(float));
 				pclPoint.r = color[0];

@@ -183,7 +183,12 @@ enum class ESlUnit : uint8
 UENUM(BlueprintType, Category = "Stereolabs|Enum")
 enum class ESlCoordinateSystem : uint8
 {
-	CS_Cartesian   			 UMETA(DisplayName = "Cartesian left-handed")
+	CS_ComputerVision		 UMETA(DisplayName = "Computer Vision Standart"),
+	CS_Unity				 UMETA(DisplayName = "Unity Coordinate System"),
+	CS_OpenGL				 UMETA(DisplayName = "OpenGL Coordinate System"),
+	CS_3DSMax				 UMETA(DisplayName = "3DSMax Coordinate System"),
+	CS_Unreal   			 UMETA(DisplayName = "Unreal Coordinate System"),
+	CS_ROS					 UMETA(DisplayName = "ROS Coordinate System")
 };
 
 /*
@@ -1526,7 +1531,7 @@ struct STEREOLABS_API FSlInitParameters
 		bRealTime(false),
 		DepthMode(ESlDepthMode::DM_Performance),
 		Unit(ESlUnit::DU_Centimeter),
-		CoordinateSystem(ESlCoordinateSystem::CS_Cartesian),
+		CoordinateSystem(ESlCoordinateSystem::CS_Unreal),
 		bVerbose(false),
 		VerboseFilePath(""),
 		GPUID(-1.0f),

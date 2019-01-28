@@ -917,8 +917,18 @@ namespace sl
 		{
 			switch (UnrealType)
 			{
-				case ESlCoordinateSystem::CS_Cartesian:
+				case ESlCoordinateSystem::CS_ComputerVision:
+					return sl::COORDINATE_SYSTEM::COORDINATE_SYSTEM_IMAGE;
+				case ESlCoordinateSystem::CS_Unity:
+					return sl::COORDINATE_SYSTEM::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP;
+				case ESlCoordinateSystem::CS_OpenGL:
+					return sl::COORDINATE_SYSTEM::COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP;
+				case ESlCoordinateSystem::CS_3DSMax:
+					return sl::COORDINATE_SYSTEM::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP;
+				case ESlCoordinateSystem::CS_Unreal:
 					return sl::COORDINATE_SYSTEM::COORDINATE_SYSTEM_LEFT_HANDED_Z_UP;
+				case ESlCoordinateSystem::CS_ROS:
+					return sl::COORDINATE_SYSTEM::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD;
 				default:
 				{
 					ensureMsgf(false, TEXT("Unhandled ESlCoordinateSystem entry %u"), (uint32)UnrealType);
