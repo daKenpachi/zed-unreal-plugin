@@ -1072,7 +1072,6 @@ void UZEDFunctionLibrary::LatencyCorrectorAddOffset(const int offset)
 //#ifdef HAS_PCL
 ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtRoi(FBox2D ROI, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr & PointcloudOut, float MinConfidence, float MaxConfidence)
 {
-
 	sl::Mat Mat;
 	sl::Mat Normals;
 	sl::Mat confidence;
@@ -1122,8 +1121,6 @@ ESlRetrieveResult UZEDFunctionLibrary::GetPointCloudAtRoi(FBox2D ROI, pcl::Point
 			}
 		}
 	}
-
 	return ESlRetrieveResult::RR_RetrieveValid;
-
 }
 //#endif

@@ -282,7 +282,15 @@ public:
 
 
 //#ifdef HAS_PCL
-	static ESlRetrieveResult GetPointCloudAtRoi(FBox2D ROI, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr & PointcloudOut, float MinConfidence = 0, float MaxConfidence = 100);
+	/*
+	* Retrieve the ZED Pointcloud of a part of the screen
+	* @param ROI				Region of interest
+	* @param PointcloudOut		The retrieved PCL pointcloud
+	* @param MinConfidence		Optional: use a minimal confidence level
+	* @param MaxConfidence		Optional: use a maximal confidence level
+	* @return				   The retrieve result
+	*/
+	static ESlRetrieveResult GetPointCloudAtRoi(FBox2D ROI, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr& PointcloudOut, float MinConfidence = 0, float MaxConfidence = 100);
 //#endif
 
 	/*
